@@ -7,35 +7,43 @@
 
 import UIKit
 
-class HomeViewController: BaseViewController
+class HomeViewController: UIViewController
 {
     //---------------------------------------------------------------------------------------------------------
     //MARK:- Data memebers
     //---------------------------------------------------------------------------------------------------------
     
-    var content: HomeViewControllerUI =
-        {
+    var content: HomeViewControllerUI = {
             let obj = HomeViewControllerUI()
             obj.translatesAutoresizingMaskIntoConstraints = false
             return obj
         }()
     
     //dependencies
-    var actions: [String] //["Poke", "Peek a Boo", "Baka", "8 Ball", "Dice", "Bowy"]
+//    var actions: [String] //["Poke", "Peek a Boo", "Baka", "8 Ball", "Dice", "Bowy"]
     
     //configurators
-    var viewModel: HomeViewModel?
-    var router: HomeRouterProtocol?
+    private let viewModel: HomeViewModel
+    private let router: HomeViewRouter
     
     //----------------------------------------------------------------------------------
     //MARK:- Init
     //----------------------------------------------------------------------------------
     
-    init(homeActionsList: [String] = ["Poke", "Peek a Boo", "Baka", "8 Ball", "Dice", "Bowy"])
-    {
-        self.actions = homeActionsList
-        super.init()   
+    // MARK: - Init
+    
+    init(viewModel: HomeViewModel, router: HomeViewRouter) {
+        self.viewModel = viewModel
+        self.router = router
+        super.init(nibName: nil, bundle: nil)
     }
+    
+    
+    
+//    init(homeActionsList: [String] = ["Poke", "Peek a Boo", "Baka", "8 Ball", "Dice", "Bowy"]){
+//        self.actions = homeActionsList
+//        super.init(nibName: nil, bundle: nil)
+//    }
     
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
@@ -45,115 +53,127 @@ class HomeViewController: BaseViewController
     //MARK:- Life cycle
     //---------------------------------------------------------------------------------------------------------
     
-    override func viewDidLoad()
-    {
+    override func viewDidLoad(){
         super.viewDidLoad()
+        content.actionsCollectionView.delegate = self
+        content.actionsCollectionView.dataSource = self
+        content.actionsCollectionView.register(ActionsCollectionViewCell.self,forCellWithReuseIdentifier: ActionsCollectionViewCell.identifier)
+        view.backgroundColor = .cream
+        view.addSubview(content)
+        contentConstraints()
+    }
+    
+    func contentConstraints() {
+                //constraints
+        NSLayoutConstraint.activate([content.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+                    content.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+                    content.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+                    content.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+                ])
     }
     
     //---------------------------------------------------------------------------------------------------------
     //MARK:- Configure UI
     //---------------------------------------------------------------------------------------------------------
     
-    override func configureUI()
-    {
-        //properties
-        view.backgroundColor = .cream
-        
-        content.actionsCollectionView.delegate = self
-        content.actionsCollectionView.dataSource = self
-        content.actionsCollectionView.register(ActionsCollectionViewCell.self,
-                                               forCellWithReuseIdentifier: ActionsCollectionViewCell.identifier)
-        
-        //subviews
-        view.addSubview(content)
-        
-        //constraints
-        NSLayoutConstraint.activate([
-            
-            content.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            content.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            content.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
-            content.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
-        ])
-    }
+//    override func configureUI(){
+//        //properties
+//        view.backgroundColor = .cream
+//
+//        content.actionsCollectionView.delegate = self
+//        content.actionsCollectionView.dataSource = self
+//        content.actionsCollectionView.register(ActionsCollectionViewCell.self,
+//                                               forCellWithReuseIdentifier: ActionsCollectionViewCell.identifier)
+//
+//        //subviews
+//        view.addSubview(content)
+//
+//        //constraints
+//        NSLayoutConstraint.activate([
+//
+//            content.leadingAnchor.constraint(equalTo: view.leadingAnchor),
+//            content.trailingAnchor.constraint(equalTo: view.trailingAnchor),
+//            content.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor),
+//            content.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
+//        ])
+//    }
     
     //---------------------------------------------------------------------------------------------------------
     //MARK:- Functionality
     //---------------------------------------------------------------------------------------------------------
     
-    override func configurator()
-    {
-        let viewModel = HomeViewModel()
-        let router = HomeRouter()
-        
-        self.viewModel = viewModel
-        router.viewController = self
-        self.router = router
-    }
+//    override func configurator(){
+//        let viewModel = HomeViewModel()
+//        let router = HomeRouter()
+//        
+//        self.viewModel = viewModel
+//        router.viewController = self
+//        self.router = router
+//    }
     
-    func didTapAction(at indexPath: IndexPath)
-    {
-        let action = actions[indexPath.item]
-        
-        switch action
-        {
-        case "Poke":
-            pokeTheCat()
-            
-        case "Peek a Boo":
-            break
-        case "Baka":
-            goForBaka()
-            
-        case "8 Ball":
-            break
-        case "Dice":
-            break
-        case "Bowy":
-            askTheBoy()
-            
-        default:
-            print("From function: \(#function) => handle default action case")
-        }
-    }
+//    func didTapAction(at indexPath: IndexPath)
+//    {
+//        let action = actions[indexPath.item]
+//
+//        switch action
+//        {
+//        case "Poke":
+//            pokeTheCat()
+//
+//        case "Peek a Boo":
+//            break
+//        case "Baka":
+//            goForBaka()
+//
+//        case "8 Ball":
+//            break
+//        case "Dice":
+//            break
+//        case "Bowy":
+//            askTheBoy()
+//
+//        default:
+//            print("From function: \(#function) => handle default action case")
+//        }
+//    }
     
-    private func pokeTheCat()
-    {
-        showIndicator()
-        viewModel?.pokeTheCat
-        { [unowned self] result in
-            
-            self.hideIndicator()
-            switch result
-            {
-            case .failure(let error):
-                showErrorAlert(withMessage: error.localizedDescription)
-            case .success(let state):
-                self.viewModelStateRendering(state: state)
-            }
-        }
-    }
+//    private func pokeTheCat()
+//    {
+////        showIndicator()
+//        viewModel.pokeTheCat
+//        { [unowned self] result in
+//
+////            self.hideIndicator()
+//            switch result
+//            {
+//            case .failure(let error): break
+////                showErrorAlert(withMessage: error.localizedDescription)
+//            case .success(let state):
+//                self.viewModelStateRendering(state: state)
+//            }
+//        }
+//    }
     
-    private func askTheBoy()
-    {
-        showIndicator()
-        viewModel?.whatBoySay
-        { [unowned self] result in
-            
-            self.hideIndicator()
-            switch result
-            {
-            case .failure(let error):
-                showErrorAlert(withMessage: error.localizedDescription)
-            case .success(let state):
-                self.viewModelStateRendering(state: state)
-            }
-        }
-    }
+//    private func askTheBoy()
+//    {
+////        showIndicator()
+//        viewModel.whatBoySay
+//        { [unowned self] result in
+//
+////            self.hideIndicator()
+//            switch result
+//            {
+//            case .failure(let error): break
+////                showErrorAlert(withMessage: error.localizedDescription)
+//            case .success(let state):
+//                self.viewModelStateRendering(state: state)
+//            }
+//        }
+//    }
     
     private func goForBaka()
     {
-        router?.routeToBaka()
+//        router.routeToBaka()
     }
     
     //---------------------------------------------------------------------------------------------------------
@@ -169,7 +189,7 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
 {
     func collectionView(_ collectionView: UICollectionView, numberOfItemsInSection section: Int) -> Int
     {
-        return actions.count
+        return 5
     }
     
     func collectionView(_ collectionView: UICollectionView, cellForItemAt indexPath: IndexPath) -> UICollectionViewCell
@@ -177,7 +197,7 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
         let cell = collectionView.dequeueReusableCell(withReuseIdentifier: ActionsCollectionViewCell.identifier,
                                                       for: indexPath) as! ActionsCollectionViewCell
         
-        cell.actionTitleLabel.text = actions[indexPath.item]
+        cell.actionTitleLabel.text = "actions[indexPath.item]"
         if indexPath.item == 0 || indexPath.item == 2 || indexPath.item == 5
         {
             cell.containerView.layer.borderWidth = 3
@@ -193,8 +213,11 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
         return CGSize(width: width, height: 120)
     }
     
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath)
-    { didTapAction(at: indexPath) }
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath){
+        
+//        didTapAction(at: indexPath)
+        
+    }
 }
 
 //----------------------------------------------------------------------------------
@@ -203,17 +226,17 @@ extension HomeViewController: UICollectionViewDelegate, UICollectionViewDataSour
 
 extension HomeViewController
 {
-    func viewModelStateRendering(state: HomeViewModelState)
-    {
-        switch state
-        {
-        case .pokedCatSays(let catSays):
-            DispatchQueue.main.async
-            { self.router?.routeToPokeViewController(catSaid: catSays) }
-            
-        case .boySaid(let boySaid):
-            DispatchQueue.main.async
-            { self.showSingleButtonAlert(withTitle: "I Say", withMessage: boySaid) }
-        }
-    }
+//    func viewModelStateRendering(state: HomeViewModelState)
+//    {
+//        switch state
+//        {
+//        case .pokedCatSays(let catSays):
+////            DispatchQueue.main.async
+////            { self.router.routeToPokeViewController(catSaid: catSays) }
+//
+//        case .boySaid(let boySaid):
+//            DispatchQueue.main.async
+//            { self.showSingleButtonAlert(withTitle: "I Say", withMessage: boySaid) }
+//        }
+//    }
 }

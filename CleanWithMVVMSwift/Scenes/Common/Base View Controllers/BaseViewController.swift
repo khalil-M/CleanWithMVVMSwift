@@ -23,7 +23,7 @@ class BaseViewController: UIViewController
     init()
     {
         super.init(nibName: nil, bundle: nil)
-        configurator()
+//        configurator()
     }
     
     required init?(coder: NSCoder) {
